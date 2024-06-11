@@ -5,7 +5,7 @@ input clk,
 output reg [6:0]display1, display2, display3,
 output reg clko,
 output reg [24:0] contador=24'd0,
-output [6:0]disp,
+output reg [6:0]disp,
 output reg [1:0]ct,
 output [2:0]hb
 );
