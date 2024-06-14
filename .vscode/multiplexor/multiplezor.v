@@ -14,6 +14,10 @@
 /////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 module clocks (
     input  clk,
     output reg F1,
@@ -26,6 +30,7 @@ module clocks (
     output reg F8,
     output reg clkdis
 );
+
 
 reg [24:0]contador1 = 25'd0, contador2 = 25'd0, contador3 = 25'd0, contador4 = 25'd0;
 reg [24:0]contador5 = 25'd0, contador6 = 25'd0, contador7 = 25'd0, contador8 = 25'd0, contador9 = 25'b0;
@@ -40,7 +45,7 @@ parameter divf8 = 25'd519_231;
 parameter divf9 = 25'd225_000;
 
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 42hz en la salida
 begin
     contador1 <= contador1 + 25'd1;
     if (contador1>=(divf1-1)) begin
@@ -49,7 +54,7 @@ begin
     F1 <= (contador1 < (divf1/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 4hz en la salida
 begin
     contador2 <= contador2 + 25'd1;
     if (contador2>=(divf2-1)) begin
@@ -58,7 +63,7 @@ begin
     F2 <= (contador2 < (divf2/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 12hz en la salida
 begin
     contador3 <= contador3 + 25'd1;
     if (contador3>=(divf3-1)) begin
@@ -67,7 +72,7 @@ begin
     F3 <= (contador3 < (divf3/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 20hz en la salida
 begin
     contador4 <= contador4 + 25'd1;
     if (contador4>=(divf4-1)) begin
@@ -76,7 +81,7 @@ begin
     F4 <= (contador4 < (divf4/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 28hz en la salida
 begin
     contador5 <= contador5 + 25'd1;
     if (contador5>=(divf5-1)) begin
@@ -85,7 +90,7 @@ begin
     F5 <= (contador5 < (divf5/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 36hz en la salida
 begin
     contador6 <= contador6 + 25'd1;
     if (contador6>=(divf6-1)) begin
@@ -94,7 +99,7 @@ begin
     F6 <= (contador6 < (divf6/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 44hz en la salida
 begin
     contador7 <= contador7 + 25'd1;
     if (contador7>=(divf7-1)) begin
@@ -103,7 +108,7 @@ begin
     F7 <= (contador7 < (divf7/2))?1'b1:1'b0;
 end
 
-always @(posedge clk) 
+always @(posedge clk) /// divisor de fescuencia para los 52hz en la salida
 begin
     contador8 <= contador8 + 25'd1;
     if (contador8>=(divf8-1)) begin
@@ -112,7 +117,7 @@ begin
     F8 <= (contador8 < (divf8/2))?1'b1:1'b0;
 end  
 
-always @(posedge clk) 
+always @(posedge clk) ///Este se utiliza para comtrolar el display 
 begin
     contador9 <= contador9 + 25'd1;
     if (contador9>=(divf8-1)) begin
@@ -122,6 +127,9 @@ begin
 end  
 endmodule
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 module multiplexor (
     input [2:0] selector,
@@ -139,9 +147,14 @@ wire F5;
 wire F6;
 wire F7;
 wire F8;
-reg clkdis;
+wire clkdis;
+wire clkdis2;
 
-clocks F1o(
+
+assign clkdis2 = clkdis;
+
+
+clocks F1o(  /// instanciaciones para el modulo de frecuencia tomando todas las salidas y la entrada de clk
     .clk(clk), 
     .F1(F1), 
     .F2(F2), 
@@ -154,16 +167,16 @@ clocks F1o(
     .clkdis(clkdis)
     ); 
 
-displays disp1(
+displays disp1( /// instanciacion del modulo de display tomando solo lo que entra y sale.
     .clkdis(clkdis), 
     .display(display), 
     .enable(enable), 
     .selector(selector));
 
-always @(*) 
+always @(*) //// aqui hacemos que este bloque se repita simpre que se de algun cambio
 begin
 
-    case (selector)
+    case (selector) /// este case junto con las instanciaciones de clocks seria nuestro mux 
 
         3'b000: mux = F1;
         3'b001: mux = F2;
@@ -178,8 +191,11 @@ begin
 end  
 endmodule
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-module display (
+module displays (
     input [2:0] selector,
     // input clk,
     output [6:0] display,
@@ -188,19 +204,17 @@ module display (
 
 );
 
-reg [1:0]cont = 1'b0;
+reg cont = 1'b0;
 reg [6:0] display1, display2;
 
-
-// clocks clkdisplay (.clk(clk), .clkdis(clkdis));
 
 always @(posedge clkdis) begin // contador para display de 7 segmetos 2bits
     cont <= ~cont;
 end
 
-
-assign enable = cont; // control de los enables del display
 assign display = cont ? display2 : display1; // asignacion de los displays 
+assign enable = cont? 2'b01: 2'b10; // control de los enables del display
+
 
 /////////////////////////////////////////////////
 // F1 = 42, F2 = 4, F3 = 12, F4 = 20, F5 = 28  //
@@ -208,7 +222,7 @@ assign display = cont ? display2 : display1; // asignacion de los displays
 /////////////////////////////////////////////////
 
 always @(*) begin
-    case (selector)
+    case (selector) ///mux insterno del display para decidir que mostrar en el display1
         3'b000: display1 = 7'b1101101;
         3'b001: display1 = 7'b0110011;
         3'b010: display1 = 7'b1101101;
@@ -221,7 +235,7 @@ always @(*) begin
 end
     
 always @(*) begin
-    case (selector)
+    case (selector) ///mux insterno del display para decidir que mostrar en el display2
         3'b000: display2 = 7'b0110011;
         3'b001: display2 = 7'b1111110;
         3'b010: display2 = 7'b0110000;
@@ -235,3 +249,7 @@ end
     
 
 endmodule
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
